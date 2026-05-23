@@ -2,8 +2,8 @@
 
 ## Integrantes
 
-- Tu nombre
-- Nombre de tus compañeras/os si hay
+- Micaela Ortiz
+- Camila Maldonado
 
 ## Dataset elegido
 
