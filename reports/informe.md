@@ -158,3 +158,53 @@ Después de aplicar la estandarización, las variables numéricas quedaron con m
 | `Age` | -0.00 | 1.00 |
 
 Esto favorece el entrenamiento de la red neuronal, especialmente cuando se utiliza descenso por gradiente, ya que las variables quedan en escalas comparables.
+
+
+# Parte 2 - Red neuronal
+
+## Introducción
+
+En esta parte se implementa una red neuronal de clasificación binaria utilizando únicamente `numpy` para el modelo. El objetivo es predecir la variable `HeartDisease`, que indica si un paciente presenta enfermedad cardíaca (`1`) o no (`0`).
+
+A partir del análisis realizado en la Parte 1, se seleccionaron 6 variables de entrada: `ST_Slope`, `ChestPainType`, `ExerciseAngina`, `Oldpeak`, `MaxHR` y `Age`.
+
+Aunque conceptualmente se trabaja con 6 variables de entrada, algunas de ellas son categóricas y deben transformarse a formato numérico antes de ingresar a la red neuronal. Para esto se utiliza **one-hot encoding** con eliminación de una categoría de referencia (`drop_first=True`).
+
+De esta forma, las variables quedan representadas de la siguiente manera:
+
+| Variable original | Tipo | Cantidad de columnas luego de codificar |
+|---|---|---:|
+| `Oldpeak` | Numérica | 1 |
+| `MaxHR` | Numérica | 1 |
+| `Age` | Numérica | 1 |
+| `ST_Slope` | Categórica | 2 |
+| `ChestPainType` | Categórica | 3 |
+| `ExerciseAngina` | Categórica | 1 |
+
+Por lo tanto, las 6 variables seleccionadas se transforman en **9 entradas numéricas** para la red neuronal. Esta transformación no agrega nuevas variables conceptuales, sino que convierte las categorías de texto en columnas binarias para que puedan ser procesadas por el modelo.
+
+## (a) Arquitectura de la red neuronal
+
+La red neuronal implementada tiene una arquitectura feedforward con una capa oculta y una capa de salida.
+
+La arquitectura elegida es:
+
+| Capa | Cantidad de neuronas | Función de activación |
+|---|---:|---|
+| Entrada | 9 | No aplica |
+| Capa oculta | 8 | ReLU |
+| Salida | 1 | Sigmoide |
+
+La capa de entrada tiene 9 neuronas porque, luego del preprocesamiento, cada paciente queda representado por 9 valores numéricos.
+
+Se eligió una capa oculta con 8 neuronas para mantener una arquitectura simple y adecuada al tamaño del dataset. Como la base tiene 918 registros, una red demasiado grande podría sobreajustarse a los datos de entrenamiento. Por eso se utiliza una cantidad moderada de neuronas.
+
+La función de activación elegida para la capa oculta es **ReLU**, definida como:
+
+```text
+ReLU(x) = max(0, x)
+```
+
+Esta función permite introducir no linealidad en el modelo y suele funcionar bien en capas ocultas porque evita que las activaciones queden saturadas para valores positivos.
+
+La capa de salida tiene una única neurona con activación **sigmoide**, porque el problema es de clasificación binaria. La salida representa una probabilidad entre 0 y 1: valores cercanos a 1 indican mayor probabilidad de enfermedad cardíaca, mientras que valores cercanos a 0 indican menor probabilidad.
