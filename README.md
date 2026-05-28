@@ -9,9 +9,9 @@
 
 **Heart Failure Prediction**
 
-Fuente: https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction
+Fuente: https://www.kaggle.com/datasets/adityakadiwal/water-potability
 
-El dataset contiene datos clínicos de pacientes y una variable objetivo binaria llamada `HeartDisease`, que indica presencia o ausencia de enfermedad cardíaca.
+El dataset contiene 
 
 ## Objetivo del trabajo
 
