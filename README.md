@@ -7,15 +7,15 @@
 
 ## Dataset elegido
 
-**Heart Failure Prediction**
+**Water Potability**
 
-Fuente: https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction
+Fuente: https://www.kaggle.com/datasets/adityakadiwal/water-potability
 
-El dataset contiene datos clínicos de pacientes y una variable objetivo binaria llamada `HeartDisease`, que indica presencia o ausencia de enfermedad cardíaca.
+El dataset contiene mediciones físico-químicas de muestras de agua y una variable objetivo binaria llamada `Potability`, que indica si el agua es apta para el consumo humano (1) o no (0).
 
 ## Objetivo del trabajo
 
-Analizar una base de datos real para un problema de clasificación binaria y luego entrenar una red neuronal que prediga la variable objetivo.
+Analizar una base de datos real para un problema de clasificación binaria y luego entrenar una red neuronal que prediga si una muestra de agua es potable o no, en base a sus características químicas.
 
 ## Contenido
 
@@ -28,7 +28,6 @@ Analizar una base de datos real para un problema de clasificación binaria y lue
 
 ## Estructura del repositorio
 
-- `data/`: contiene el archivo `heart.csv`.
+- `data/`: contiene el archivo `water_potability.csv`.
 - `notebooks/`: contiene el análisis exploratorio y el entrenamiento del modelo.
 - `reports/`: contiene el informe final en PDF.
-- `src/`: scripts auxiliares en Python.

@@ -3,208 +3,208 @@
 ## Trabajo Práctico - Matemática III
 
 **Tema:** Redes neuronales  
-**Dataset:** Heart Failure Prediction  
-**Fuente:** https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction  
-**Integrantes:** Micaela Ortiz y Camila Maldonado.
+**Dataset:** Water Potability  
+**Fuente:** https://www.kaggle.com/datasets/adityakadiwal/water-potability  
+**Integrantes:** Micaela Ortiz y Camila Maldonado
+
+---
 
 ## Introducción
 
-Para este trabajo se eligió la base de datos **Heart Failure Prediction**, disponible en Kaggle. Se trata de una base de datos real relacionada con pacientes y enfermedad cardíaca.
+Para este trabajo se eligió la base de datos **Water Potability**, disponible en Kaggle. Se trata de una base de datos real que contiene mediciones físico-químicas de muestras de agua y una variable objetivo binaria que indica si el agua es apta para el consumo humano o no.
 
-El objetivo de esta primera parte es analizar la base antes de utilizarla para entrenar una red neuronal de clasificación. En particular, se busca describir las variables, estudiar su relación con la variable objetivo, detectar posibles valores atípicos o inconsistentes y definir una estrategia de normalización.
+El objetivo de esta primera parte es analizar la base antes de utilizarla para entrenar una red neuronal de clasificación. En particular, se busca describir las variables, estudiar su relación con la variable objetivo, detectar posibles valores atípicos o faltantes y definir una estrategia de normalización.
+
+---
 
 ## Descripción general del dataset
 
-La base contiene **918 registros** y **12 columnas**. Cada fila representa un paciente. Las columnas contienen variables clínicas y demográficas, como edad, sexo, tipo de dolor de pecho, presión arterial en reposo, colesterol, frecuencia cardíaca máxima y otras mediciones asociadas.
+La base contiene **3.276 registros** y **10 columnas**. Cada fila representa una muestra de agua con sus mediciones físico-químicas correspondientes.
 
-La variable objetivo es `HeartDisease`, que toma dos valores posibles:
+La variable objetivo es `Potability`, que toma dos valores posibles:
 
-- `0`: ausencia de enfermedad cardíaca.
-- `1`: presencia de enfermedad cardíaca.
+- `0`: agua no potable
+- `1`: agua potable
 
-Por este motivo, el problema corresponde a una **clasificación binaria**, ya que el modelo deberá predecir una de dos clases posibles.
-
-La distribución de la variable objetivo es relativamente balanceada:
+La distribución de la variable objetivo es la siguiente:
 
 | Clase | Significado | Cantidad | Porcentaje |
 |---|---|---:|---:|
-| 0 | Sin enfermedad cardíaca | 410 | 44.66% |
-| 1 | Con enfermedad cardíaca | 508 | 55.34% |
+| 0 | No potable | 1998 | 60.99% |
+| 1 | Potable | 1278 | 39.01% |
 
-No se observan valores faltantes explícitos, ya que todas las columnas tienen 918 valores no nulos. Sin embargo, en el resumen estadístico aparecen valores mínimos iguales a 0 en variables como `RestingBP` y `Cholesterol`, que deberán analizarse porque podrían representar datos inválidos o faltantes codificados como cero.
+El dataset presenta un leve desbalance de clases, con un 61% de muestras no potables y un 39% potables. Este desbalance es moderado y no representa un problema significativo para el entrenamiento de la red neuronal.
+
+Se detectaron valores faltantes en tres columnas: `ph` (491 valores), `Sulfate` (781 valores) y `Trihalomethanes` (162 valores). El resto de las columnas no presentan valores faltantes.
+
+---
 
 ## (a) Descripción de las columnas
 
+El dataset contiene 9 variables de entrada y 1 variable objetivo. Todas las variables de entrada son numéricas continuas de tipo float, lo que hace que este dataset sea especialmente adecuado para el análisis estadístico y la normalización. No hay variables categóricas ni de texto.
+
 | Columna | Tipo | Descripción |
 |---|---|---|
-| `Age` | Numérica | Edad del paciente en años. |
-| `Sex` | Categórica | Sexo del paciente: `M` masculino, `F` femenino. |
-| `ChestPainType` | Categórica | Tipo de dolor de pecho. Los valores posibles son `TA`, `ATA`, `NAP` y `ASY`. |
-| `RestingBP` | Numérica | Presión arterial en reposo. |
-| `Cholesterol` | Numérica | Nivel de colesterol sérico. |
-| `FastingBS` | Binaria | Indica si el nivel de azúcar en sangre en ayunas supera 120 mg/dl: `1` sí, `0` no. |
-| `RestingECG` | Categórica | Resultado del electrocardiograma en reposo. Los valores posibles son `Normal`, `ST` y `LVH`. |
-| `MaxHR` | Numérica | Frecuencia cardíaca máxima alcanzada. |
-| `ExerciseAngina` | Binaria/categórica | Indica si hubo angina inducida por ejercicio: `Y` sí, `N` no. |
-| `Oldpeak` | Numérica | Depresión del segmento ST inducida por ejercicio en comparación con el reposo. |
-| `ST_Slope` | Categórica | Pendiente del segmento ST durante el ejercicio. Los valores posibles son `Up`, `Flat` y `Down`. |
-| `HeartDisease` | Binaria | Variable objetivo. `1` indica presencia de enfermedad cardíaca y `0` ausencia. |
+| `ph` | Numérica continua | Nivel de pH del agua. El rango normal para agua potable según la OMS es entre 6.5 y 8.5. Va de 0 a 14. Tiene 491
+| valores faltantes. |
+| `Hardness` | Numérica continua | Dureza del agua en mg/L. Mide la cantidad de calcio y magnesio disueltos en el agua. |
+| `Solids` | Numérica continua | Sólidos totales disueltos en ppm. Indica la cantidad de minerales y sales disueltas. Es la variable con mayor
+| magnitud numérica del dataset. |
+| `Chloramines` | Numérica continua | Concentración de cloraminas en ppm. Se usan como desinfectante en el tratamiento del agua potable. |
+| `Sulfate` | Numérica continua | Concentración de sulfatos en mg/L. Tiene 781 valores faltantes, la mayor cantidad del dataset. |
+| `Conductivity` | Numérica continua | Conductividad eléctrica del agua en μS/cm. Indica la cantidad de iones disueltos. |
+| `Organic_carbon` | Numérica continua | Carbono orgánico total en ppm. Mide la cantidad de compuestos orgánicos presentes en el agua. |
+| `Trihalomethanes` | Numérica continua | Concentración de trihalometanos en μg/L. Son subproductos generados durante el proceso de desinfección
+| del agua. Tiene 162 valores faltantes. |
+| `Turbidity` | Numérica continua | Turbidez del agua en NTU. Mide la claridad del agua, es decir, cuánta luz puede atravesarla. |
+| `Potability` | Binaria (target) | Variable objetivo. `1` indica que el agua es potable y `0` indica que no lo es. |
+
+---
 
 ## (b) Correlación de las características con la salida
 
-Para analizar la relación entre las variables de entrada y la variable objetivo `HeartDisease`, primero se transformaron las variables categóricas mediante **one-hot encoding**. Esto permite representar cada categoría como una variable binaria y calcular su correlación con la salida.
+Para analizar la relación entre las variables de entrada y la variable objetivo `Potability` se calculó el coeficiente de correlación de Pearson. Este coeficiente toma valores entre -1 y 1, donde valores cercanos a 1 indican una relación positiva fuerte, valores cercanos a -1 indican una relación negativa fuerte y valores cercanos a 0 indican que no hay relación lineal entre las variables.
 
-Las correlaciones más relevantes observadas fueron:
+Dado que todas las variables son numéricas, no fue necesario aplicar one-hot encoding para este análisis.
 
-| Variable | Correlación con `HeartDisease` | Interpretación |
+Los resultados obtenidos ordenados de mayor a menor fueron:
+
+| Variable | Correlación con `Potability` | Interpretación |
 |---|---:|---|
-| `ST_Slope_Up` | -0.622 | Se asocia fuertemente con ausencia de enfermedad cardíaca. |
-| `ST_Slope_Flat` | 0.554 | Se asocia con presencia de enfermedad cardíaca. |
-| `ChestPainType_ASY` | 0.517 | El tipo de dolor asintomático aparece asociado a casos positivos. |
-| `ExerciseAngina_Y` | 0.494 | La angina inducida por ejercicio se asocia con enfermedad cardíaca. |
-| `Oldpeak` | 0.404 | Valores mayores tienden a asociarse con enfermedad cardíaca. |
-| `MaxHR` | -0.400 | Una frecuencia cardíaca máxima mayor tiende a asociarse con ausencia de enfermedad. |
-| `ChestPainType_ATA` | -0.402 | Este tipo de dolor aparece asociado a menor presencia de enfermedad cardíaca. |
-| `Sex_M` | 0.305 | En esta base, el sexo masculino tiene correlación positiva con la salida. |
-| `Age` | 0.282 | La edad presenta una correlación positiva moderada con la enfermedad cardíaca. |
-| `FastingBS` | 0.267 | El azúcar en sangre en ayunas elevado se asocia moderadamente con casos positivos. |
+| `Solids` | 0.034 | Correlación positiva muy baja. |
+| `Chloramines` | 0.024 | Correlación positiva muy baja. |
+| `Trihalomethanes` | 0.007 | Correlación prácticamente nula. |
+| `Turbidity` | 0.002 | Correlación prácticamente nula. |
+| `ph` | -0.004 | Correlación negativa prácticamente nula. |
+| `Conductivity` | -0.008 | Correlación negativa prácticamente nula. |
+| `Hardness` | -0.014 | Correlación negativa muy baja. |
+| `Sulfate` | -0.024 | Correlación negativa muy baja. |
+| `Organic_carbon` | -0.030 | Correlación negativa muy baja. |
 
-A partir de este análisis, las variables que parecen más influyentes son `ST_Slope`, `ChestPainType`, `ExerciseAngina`, `Oldpeak` y `MaxHR`. En cambio, variables como `RestingECG_LVH`, `RestingBP` y `RestingECG_ST` presentan correlaciones más bajas, por lo que parecen aportar menos información de forma individual.
+Ninguna variable presenta una correlación lineal significativa con la variable objetivo. Todos los valores se encuentran entre -0.03 y 0.03, lo que indica que la relación entre las propiedades físico-químicas del agua y su potabilidad no es de naturaleza lineal.
 
-De todos modos, no se deberían descartar variables únicamente por una correlación baja, ya que una red neuronal puede aprender relaciones no lineales o combinaciones entre variables. Por ese motivo, para un primer modelo conviene conservar la mayoría de las columnas, luego evaluar el desempeño y recién después considerar una selección de características.
+Esto no implica que las variables sean irrelevantes. Significa que su relación con la potabilidad es compleja y no puede ser capturada por una simple correlación lineal. Esto justifica el uso de una red neuronal, que es capaz de aprender relaciones no lineales que métodos más simples no pueden detectar.
 
-![Gráfico de correlaciones](figures/grafico_correlaciones.png)
+El mapa de calor también confirma que las variables de entrada son prácticamente independientes entre sí, sin correlaciones fuertes entre ningún par de variables. Esto indica que no hay redundancia en el dataset y que todas las columnas aportan información distinta al modelo.
+
+Dado que ninguna variable individual se destaca como claramente más influyente que las demás, se decidió conservar las 9 variables de entrada para el entrenamiento de la red neuronal.
+
+![Gráfico de correlaciones](figures/correlaciones.png)
+
+---
 
 ## (c) Adecuación de la base para una red neuronal de clasificación binaria
 
-Esta base de datos es adecuada para entrenar una red neuronal de clasificación binaria porque contiene una variable objetivo binaria, `HeartDisease`, y varias variables de entrada que describen características clínicas y demográficas de cada paciente.
+**¿Es esta base de datos adecuada para una red neuronal de clasificación binaria?**
 
-El modelo intentará predecir si un paciente presenta enfermedad cardíaca o no. Es decir:
+Sí, el dataset es adecuado por varias razones.
 
-- Entrada del modelo: variables como edad, sexo, tipo de dolor de pecho, presión arterial, colesterol, frecuencia cardíaca máxima, entre otras.
-- Salida del modelo: valor de `HeartDisease`, donde `1` indica presencia de enfermedad cardíaca y `0` indica ausencia.
+En primer lugar, la variable objetivo `Potability` es estrictamente binaria, tomando únicamente los valores 0 (agua no potable) y 1 (agua potable), lo cual se alinea perfectamente con la arquitectura de una red neuronal de clasificación binaria que produce una única salida entre 0 y 1.
 
-La base tiene 918 registros, una cantidad suficiente para construir un modelo inicial. Además, la distribución de clases no está extremadamente desbalanceada: aproximadamente el 55.34% de los registros corresponden a pacientes con enfermedad cardíaca y el 44.66% a pacientes sin enfermedad.
+En segundo lugar, el dataset está compuesto por datos reales de mediciones físico-químicas de muestras de agua, lo que garantiza que los patrones que aprenda la red correspondan a relaciones reales y no a datos artificiales.
 
-Antes de entrenar la red neuronal, será necesario transformar las variables categóricas a formato numérico y normalizar las variables numéricas para que todas tengan escalas comparables.
+En tercer lugar, aunque las correlaciones lineales con la variable objetivo son bajas, esto no implica que las variables sean irrelevantes. Una red neuronal es capaz de capturar relaciones no lineales y combinaciones entre variables que no son detectables mediante correlación de Pearson.
+
+**¿Qué intentará predecir el modelo?**
+
+El modelo intentará predecir si una muestra de agua es potable o no a partir de sus mediciones físico-químicas. Dado un conjunto de características de entrada como el pH, la dureza, los sólidos disueltos y otros indicadores, la red neuronal producirá un valor entre 0 y 1 que representa la probabilidad de que esa muestra sea potable. Si ese valor supera 0.5 se clasifica como potable (1) y si es menor se clasifica como no potable (0).
+
+**¿Cuál es el objetivo del modelo?**
+
+El objetivo principal es construir un clasificador automatizado que, al recibir las mediciones físico-químicas de una muestra de agua, sea capaz de determinar si es apta para el consumo humano. Este tipo de herramienta tiene aplicación real en el monitoreo y control de calidad del agua en plantas de tratamiento o sistemas de distribución.
+
+La distribución de clases es aceptable para el entrenamiento: 61% no potable y 39% potable. Este desbalance moderado no genera sesgos significativos en el aprendizaje del modelo, ya que ambas clases tienen representación suficiente.
+
+---
 
 ## (d) Identificación de datos atípicos y limpieza
 
-Para identificar posibles datos atípicos se analizaron dos aspectos: valores iguales a cero en variables donde podrían no tener sentido clínico, y detección de atípicos mediante el método del rango intercuartílico (IQR).
+**Valores faltantes**
 
-En primer lugar, se encontraron los siguientes valores iguales a cero:
+Durante el análisis exploratorio se detectaron valores faltantes en tres columnas:
 
-| Variable | Cantidad de valores 0 | Observación |
-|---|---:|---|
-| `RestingBP` | 1 | Una presión arterial en reposo igual a 0 no es un valor clínicamente válido. |
-| `Cholesterol` | 172 | Un colesterol igual a 0 probablemente representa datos faltantes o no medidos. |
-| `MaxHR` | 0 | No presenta valores cero. |
-| `Oldpeak` | 368 | En este caso el valor 0 sí puede ser válido, porque indica ausencia de depresión del segmento ST. |
+| Variable | Valores faltantes | Porcentaje |
+|---|---:|---:|
+| `ph` | 491 | 14.99% |
+| `Sulfate` | 781 | 23.84% |
+| `Trihalomethanes` | 162 | 4.95% |
 
-Luego se aplicó el método IQR sobre las variables numéricas:
+Se decidió imputar estos valores con la **mediana de cada columna** en lugar de eliminar las filas correspondientes. Eliminar las filas implicaría perder hasta un 24% del dataset, lo cual reduciría significativamente la cantidad de datos disponibles para el entrenamiento. Se eligió la mediana en lugar del promedio porque es más robusta ante la presencia de outliers, es decir, no se ve afectada por valores extremos como sí lo hace el promedio.
+
+**Detección de datos atípicos**
+
+Se aplicó el método del rango intercuartílico (IQR) para detectar outliers en cada columna. Este método define los límites fuera de los cuales un valor se considera atípico mediante las siguientes fórmulas:
+
+límite inferior = Q1 - 1.5 × IQR
+límite superior = Q3 + 1.5 × IQR
+
+donde Q1 es el percentil 25, Q3 es el percentil 75 e IQR = Q3 - Q1.
+
+Los resultados obtenidos fueron:
 
 | Variable | Límite inferior | Límite superior | Cantidad de atípicos |
 |---|---:|---:|---:|
-| `Age` | 27.50 | 79.50 | 0 |
-| `RestingBP` | 90.00 | 170.00 | 28 |
-| `Cholesterol` | 32.62 | 407.62 | 183 |
-| `MaxHR` | 66.00 | 210.00 | 2 |
-| `Oldpeak` | -2.25 | 3.75 | 16 |
+| `ph` | 3.14 | 11.02 | 46 |
+| `Hardness` | 117.13 | 276.39 | 83 |
+| `Solids` | -1832.42 | 44831.87 | 47 |
+| `Chloramines` | 3.15 | 11.10 | 61 |
+| `Sulfate` | 229.32 | 438.33 | 41 |
+| `Conductivity` | 191.65 | 655.88 | 11 |
+| `Organic_carbon` | 5.33 | 23.30 | 25 |
+| `Trihalomethanes` | 23.61 | 109.58 | 33 |
+| `Turbidity` | 1.85 | 6.09 | 19 |
 
-![Boxplots de variables numéricas](figures/boxplot.png)
+**¿Es necesario limpiarlos?**
 
-A partir de estos resultados, se observa que `RestingBP` y `Cholesterol` requieren especial atención. En particular, los valores iguales a cero no parecen representar mediciones reales, sino datos inválidos o faltantes codificados como cero.
+Se decidió **no eliminar** los outliers detectados por las siguientes razones:
 
-La estrategia de limpieza y selección de características propuesta es:
+Primero, representan mediciones físico-químicas reales que pueden ocurrir naturalmente en distintas fuentes de agua. Un agua con muchos sólidos disueltos, pH extremo o alta conductividad es perfectamente posible en la naturaleza y no necesariamente indica un error de medición.
 
-- Eliminar la columna `Cholesterol`, ya que contiene 172 valores iguales a cero, equivalentes aproximadamente al 18.7% del dataset.
-- Eliminar la columna `RestingBP`, ya que además de presentar un valor imposible igual a cero, mostró una correlación baja con la variable objetivo (`0.108`).
-- Conservar `Oldpeak = 0`, ya que es un valor válido dentro del significado de la variable.
-- No eliminar automáticamente todos los valores atípicos detectados por IQR, porque algunos pueden corresponder a pacientes reales con valores clínicos extremos.
-- Seleccionar para el entrenamiento inicial las variables que mostraron mayor relación con la salida: `ST_Slope`, `ChestPainType`, `ExerciseAngina`, `Oldpeak`, `MaxHR` y `Age`.
+Segundo, eliminar todos los outliers implicaría descartar entre 300 y 400 filas del dataset, lo que representa hasta un 12% de los datos disponibles, reduciendo innecesariamente el conjunto de entrenamiento.
 
-Se decide eliminar `Cholesterol` porque un colesterol igual a cero no es clínicamente posible en un paciente vivo. Por lo tanto, esos valores probablemente representan datos faltantes o no medidos. Como hay 172 registros con este problema, eliminar las filas implicaría perder una parte importante de la base. Reemplazarlos por la mediana también podría introducir una distorsión considerable, ya que afectaría a una proporción alta de la columna. Por ese motivo, se opta por descartar la variable completa para el entrenamiento inicial.
+Tercero, la normalización Z-score aplicada en la siguiente sección reduce el impacto de estos valores extremos sobre el entrenamiento de la red neuronal al llevar todas las variables a una escala comparable.
 
-En el caso de `RestingBP`, se detectó un único valor igual a cero, que tampoco es clínicamente válido. Si solo se considerara ese dato, podría reemplazarse por la mediana. Sin embargo, la variable presenta una correlación baja con `HeartDisease` (`0.108`), por lo que se decide no incluirla entre las características finales.
+Los boxplots confirman visualmente la presencia de outliers en todas las variables. `Solids` es la más destacada con valores que superan 60.000 mientras la mayoría se concentra entre 15.000 y 27.000. `Conductivity` presenta outliers que llegan hasta 750. El resto de las variables muestran outliers moderados distribuidos principalmente hacia los extremos superiores.
 
-Además, se realiza una selección de variables para reducir la dimensionalidad del problema. Se conservan `ST_Slope`, `ChestPainType`, `ExerciseAngina`, `Oldpeak`, `MaxHR` y `Age`, porque fueron algunas de las variables con mayor correlación absoluta con la variable objetivo. También se conserva `HeartDisease` como variable de salida.
-
-Con estas decisiones se mantienen las 918 filas originales y el dataset final queda reducido a 7 columnas: 6 variables de entrada y 1 variable objetivo. Esto permite trabajar con una entrada más simple para la red neuronal, evitando variables problemáticas o de menor relevancia individual.
+---
 
 ## (e) Normalización de los datos
 
-Antes de entrenar una red neuronal, es necesario transformar las variables para que todas puedan ser utilizadas como entradas numéricas del modelo.
+Dado que todas las variables de entrada son numéricas continuas con escalas muy distintas entre sí, es necesario normalizarlas antes de entrenar la red neuronal.
 
-Luego de la selección de características, el dataset quedó compuesto por 6 variables de entrada (`ST_Slope`, `ChestPainType`, `ExerciseAngina`, `Oldpeak`, `MaxHR` y `Age`) y una variable objetivo (`HeartDisease`).
+Por ejemplo, `Solids` toma valores en el orden de los miles mientras que `Turbidity` toma valores menores a 7. Sin normalización, la red neuronal podría asignarle más importancia a variables con mayor magnitud numérica aunque no sean más relevantes para la predicción. Además, la normalización facilita y acelera la convergencia del algoritmo de descenso por gradiente.
 
-En primer lugar, las variables categóricas seleccionadas (`ST_Slope`, `ChestPainType` y `ExerciseAngina`) se transformaron mediante **one-hot encoding**. Este procedimiento crea una columna binaria para cada categoría posible. Por ejemplo, la variable `ExerciseAngina`, que originalmente contiene los valores `Y` y `N`, se transforma en columnas numéricas que indican la presencia o ausencia de cada categoría.
+**Imputación previa a la normalización**
 
-Luego, se normalizaron las variables numéricas seleccionadas: `Oldpeak`, `MaxHR` y `Age`.
+Antes de normalizar se reemplazaron los valores faltantes de `ph`, `Sulfate` y `Trihalomethanes` con la mediana de cada columna. Luego de esta operación el dataset quedó sin valores faltantes en ninguna columna.
 
-El método elegido fue la **estandarización Z-score**, definida como:
+**Método elegido: estandarización Z-score**
 
-```text
+Se aplicó la estandarización Z-score a todas las variables de entrada mediante la fórmula:
+
 z = (x - media) / desvío estándar
-```
 
-Se eligió este método porque las variables numéricas están en escalas distintas. Por ejemplo, `MaxHR` toma valores mucho más grandes que `Oldpeak`, y si no se normalizan, la red neuronal podría darle más peso a algunas variables solo por su escala numérica.
+Este método transforma cada variable para que quede con media igual a 0 y desvío estándar igual a 1, llevando todas las columnas a una escala comparable.
 
-Después de aplicar la estandarización, las variables numéricas quedaron con media cercana a 0 y desvío estándar cercano a 1:
+Se eligió Z-score en lugar de Min-Max por dos razones. Primero, el dataset presenta outliers en todas las columnas y el método Min-Max es muy sensible a valores extremos ya que comprime todos los valores en un rango fijo de 0 a 1, lo que hace que los outliers distorsionen la escala de toda la columna. El Z-score en cambio reescala los valores manteniendo su distribución original. Segundo, el Z-score es el método recomendado para redes neuronales con descenso por gradiente porque produce entradas centradas en cero, lo que favorece la estabilidad del entrenamiento.
+
+La normalización se implementó manualmente usando NumPy, sin recurrir a librerías de machine learning, aplicándose sobre las 9 columnas de entrada.
+
+**Resultado final**
+
+Luego del procesamiento, las variables quedaron con los siguientes resultados:
 
 | Variable | Media luego de normalizar | Desvío estándar luego de normalizar |
 |---|---:|---:|
-| `Oldpeak` | 0.00 | 1.00 |
-| `MaxHR` | 0.00 | 1.00 |
-| `Age` | -0.00 | 1.00 |
+| `ph` | ~0 | 1.00 |
+| `Hardness` | ~0 | 1.00 |
+| `Solids` | ~0 | 1.00 |
+| `Chloramines` | ~0 | 1.00 |
+| `Sulfate` | ~0 | 1.00 |
+| `Conductivity` | ~0 | 1.00 |
+| `Organic_carbon` | ~0 | 1.00 |
+| `Trihalomethanes` | ~0 | 1.00 |
+| `Turbidity` | ~0 | 1.00 |
 
-Esto favorece el entrenamiento de la red neuronal, especialmente cuando se utiliza descenso por gradiente, ya que las variables quedan en escalas comparables.
+La matriz final de entrada X tiene shape **(3276, 9)** y la variable objetivo y tiene shape **(3276, 1)**. El dataset queda listo para ser utilizado en el entrenamiento de la red neuronal.
 
-
-# Parte 2 - Red neuronal
-
-## Introducción
-
-En esta parte se implementa una red neuronal de clasificación binaria utilizando únicamente `numpy` para el modelo. El objetivo es predecir la variable `HeartDisease`, que indica si un paciente presenta enfermedad cardíaca (`1`) o no (`0`).
-
-A partir del análisis realizado en la Parte 1, se seleccionaron 6 variables de entrada: `ST_Slope`, `ChestPainType`, `ExerciseAngina`, `Oldpeak`, `MaxHR` y `Age`.
-
-Aunque conceptualmente se trabaja con 6 variables de entrada, algunas de ellas son categóricas y deben transformarse a formato numérico antes de ingresar a la red neuronal. Para esto se utiliza **one-hot encoding** con eliminación de una categoría de referencia (`drop_first=True`).
-
-De esta forma, las variables quedan representadas de la siguiente manera:
-
-| Variable original | Tipo | Cantidad de columnas luego de codificar |
-|---|---|---:|
-| `Oldpeak` | Numérica | 1 |
-| `MaxHR` | Numérica | 1 |
-| `Age` | Numérica | 1 |
-| `ST_Slope` | Categórica | 2 |
-| `ChestPainType` | Categórica | 3 |
-| `ExerciseAngina` | Categórica | 1 |
-
-Por lo tanto, las 6 variables seleccionadas se transforman en **9 entradas numéricas** para la red neuronal. Esta transformación no agrega nuevas variables conceptuales, sino que convierte las categorías de texto en columnas binarias para que puedan ser procesadas por el modelo.
-
-## (a) Arquitectura de la red neuronal
-
-La red neuronal implementada tiene una arquitectura feedforward con una capa oculta y una capa de salida.
-
-La arquitectura elegida es:
-
-| Capa | Cantidad de neuronas | Función de activación |
-|---|---:|---|
-| Entrada | 9 | No aplica |
-| Capa oculta | 8 | ReLU |
-| Salida | 1 | Sigmoide |
-
-La capa de entrada tiene 9 neuronas porque, luego del preprocesamiento, cada paciente queda representado por 9 valores numéricos.
-
-Se eligió una capa oculta con 8 neuronas para mantener una arquitectura simple y adecuada al tamaño del dataset. Como la base tiene 918 registros, una red demasiado grande podría sobreajustarse a los datos de entrenamiento. Por eso se utiliza una cantidad moderada de neuronas.
-
-La función de activación elegida para la capa oculta es **ReLU**, definida como:
-
-```text
-ReLU(x) = max(0, x)
-```
-
-Esta función permite introducir no linealidad en el modelo y suele funcionar bien en capas ocultas porque evita que las activaciones queden saturadas para valores positivos.
-
-La capa de salida tiene una única neurona con activación **sigmoide**, porque el problema es de clasificación binaria. La salida representa una probabilidad entre 0 y 1: valores cercanos a 1 indican mayor probabilidad de enfermedad cardíaca, mientras que valores cercanos a 0 indican menor probabilidad.
