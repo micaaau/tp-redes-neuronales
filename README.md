@@ -31,3 +31,4 @@ Analizar una base de datos real para un problema de clasificación binaria y lue
 - `data/`: contiene el archivo `water_potability.csv`.
 - `notebooks/`: contiene el análisis exploratorio y el entrenamiento del modelo.
 - `reports/`: contiene el informe final en PDF.
+- `src/`: scripts auxiliares en Python.
