@@ -1,8 +1,6 @@
-# Informe - Parte 1: Análisis de la base de datos
+# Informe — Parte 1: Análisis de la base de datos
 
-## Trabajo Práctico - Matemática III
-
-**Tema:** Redes neuronales  
+**Trabajo Práctico — Matemática III: Redes Neuronales**  
 **Dataset:** Water Potability  
 **Fuente:** https://www.kaggle.com/datasets/adityakadiwal/water-potability  
 **Integrantes:** Micaela Ortiz y Camila Maldonado
@@ -11,20 +9,28 @@
 
 ## Introducción
 
-Para este trabajo se eligió la base de datos **Water Potability**, disponible en Kaggle. Se trata de una base de datos real que contiene mediciones físico-químicas de muestras de agua y una variable objetivo binaria que indica si el agua es apta para el consumo humano o no.
+Se eligió la base de datos **Water Potability**, disponible en Kaggle. Contiene mediciones físico-químicas de muestras de agua y una variable objetivo binaria que indica si el agua es apta para el consumo humano. El objetivo de esta primera parte es analizar el dataset antes de utilizarlo para entrenar una red neuronal de clasificación: describir las variables, estudiar su relación con la variable objetivo, detectar outliers y valores faltantes, y definir una estrategia de normalización.
 
-El objetivo de esta primera parte es analizar la base antes de utilizarla para entrenar una red neuronal de clasificación. En particular, se busca describir las variables, estudiar su relación con la variable objetivo, detectar posibles valores atípicos o faltantes y definir una estrategia de normalización.
+El dataset contiene **3.276 registros** y **10 columnas**: 9 variables de entrada numéricas y 1 variable objetivo binaria.
 
 ---
 
-## Descripción general del dataset
+## (a) Descripción de las columnas
 
-La base contiene **3.276 registros** y **10 columnas**. Cada fila representa una muestra de agua con sus mediciones físico-químicas correspondientes.
+Todas las variables de entrada son **numéricas continuas** de tipo `float64`. No hay variables categóricas ni de texto, por lo que no fue necesario aplicar ningún tipo de codificación (como one-hot encoding).
 
-La variable objetivo es `Potability`, que toma dos valores posibles:
-
-- `0`: agua no potable
-- `1`: agua potable
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `ph` | Numérica continua | Nivel de pH del agua. Rango teórico: 0 a 14. El rango seguro según la OMS para agua potable es entre 6.5 y 8.5. Tiene **491 valores faltantes**. |
+| `Hardness` | Numérica continua | Dureza del agua en mg/L. Mide la cantidad de calcio y magnesio disueltos. Sin valores faltantes. |
+| `Solids` | Numérica continua | Sólidos totales disueltos en ppm. Es la variable con mayor magnitud numérica del dataset (valores en el orden de los miles). Sin valores faltantes. |
+| `Chloramines` | Numérica continua | Concentración de cloraminas en ppm. Se usan como desinfectante en el tratamiento del agua. Sin valores faltantes. |
+| `Sulfate` | Numérica continua | Concentración de sulfatos en mg/L. Tiene **781 valores faltantes**, la mayor cantidad del dataset (23.84%). |
+| `Conductivity` | Numérica continua | Conductividad eléctrica del agua en μS/cm. Indica la cantidad de iones disueltos. Sin valores faltantes. |
+| `Organic_carbon` | Numérica continua | Carbono orgánico total en ppm. Mide la cantidad de compuestos orgánicos presentes en el agua. Sin valores faltantes. |
+| `Trihalomethanes` | Numérica continua | Concentración de trihalometanos en μg/L. Son subproductos del proceso de desinfección del agua. Tiene **162 valores faltantes**. |
+| `Turbidity` | Numérica continua | Turbidez del agua en NTU. Mide la claridad del agua. Sin valores faltantes. |
+| `Potability` | Binaria (target) | Variable objetivo. `1` indica agua potable y `0` indica agua no potable. |
 
 La distribución de la variable objetivo es la siguiente:
 
@@ -33,95 +39,86 @@ La distribución de la variable objetivo es la siguiente:
 | 0 | No potable | 1998 | 60.99% |
 | 1 | Potable | 1278 | 39.01% |
 
-El dataset presenta un leve desbalance de clases, con un 61% de muestras no potables y un 39% potables. Este desbalance es moderado y no representa un problema significativo para el entrenamiento de la red neuronal.
-
-Se detectaron valores faltantes en tres columnas: `ph` (491 valores), `Sulfate` (781 valores) y `Trihalomethanes` (162 valores). El resto de las columnas no presentan valores faltantes.
-
----
-
-## (a) Descripción de las columnas
-
-El dataset contiene 9 variables de entrada y 1 variable objetivo. Todas las variables de entrada son numéricas continuas de tipo float, lo que hace que este dataset sea especialmente adecuado para el análisis estadístico y la normalización. No hay variables categóricas ni de texto.
-
-| Columna | Tipo | Descripción |
-|---|---|---|
-| `ph` | Numérica continua | Nivel de pH del agua. El rango normal para agua potable según la OMS es entre 6.5 y 8.5. Va de 0 a 14. Tiene 491
-| valores faltantes. |
-| `Hardness` | Numérica continua | Dureza del agua en mg/L. Mide la cantidad de calcio y magnesio disueltos en el agua. |
-| `Solids` | Numérica continua | Sólidos totales disueltos en ppm. Indica la cantidad de minerales y sales disueltas. Es la variable con mayor
-| magnitud numérica del dataset. |
-| `Chloramines` | Numérica continua | Concentración de cloraminas en ppm. Se usan como desinfectante en el tratamiento del agua potable. |
-| `Sulfate` | Numérica continua | Concentración de sulfatos en mg/L. Tiene 781 valores faltantes, la mayor cantidad del dataset. |
-| `Conductivity` | Numérica continua | Conductividad eléctrica del agua en μS/cm. Indica la cantidad de iones disueltos. |
-| `Organic_carbon` | Numérica continua | Carbono orgánico total en ppm. Mide la cantidad de compuestos orgánicos presentes en el agua. |
-| `Trihalomethanes` | Numérica continua | Concentración de trihalometanos en μg/L. Son subproductos generados durante el proceso de desinfección
-| del agua. Tiene 162 valores faltantes. |
-| `Turbidity` | Numérica continua | Turbidez del agua en NTU. Mide la claridad del agua, es decir, cuánta luz puede atravesarla. |
-| `Potability` | Binaria (target) | Variable objetivo. `1` indica que el agua es potable y `0` indica que no lo es. |
+Existe un leve desbalance de clases (61% / 39%). Este desbalance es moderado y no representa un problema crítico para el entrenamiento, ya que ambas clases tienen representación suficiente. Sin embargo, se recomienda evaluar el modelo con métricas que sean sensibles al desbalance, como F1-score o AUC-ROC, y no solo con accuracy, ya que un modelo que prediga siempre "no potable" obtendría un 61% de accuracy sin haber aprendido nada.
 
 ---
 
 ## (b) Correlación de las características con la salida
 
-Para analizar la relación entre las variables de entrada y la variable objetivo `Potability` se calculó el coeficiente de correlación de Pearson. Este coeficiente toma valores entre -1 y 1, donde valores cercanos a 1 indican una relación positiva fuerte, valores cercanos a -1 indican una relación negativa fuerte y valores cercanos a 0 indican que no hay relación lineal entre las variables.
+Para analizar la relación entre las variables de entrada y la variable objetivo se utilizaron dos enfoques complementarios: la **correlación de Pearson** y la **información mutua**.
 
-Dado que todas las variables son numéricas, no fue necesario aplicar one-hot encoding para este análisis.
+Antes del cálculo, los valores faltantes fueron imputados con la mediana de cada columna (ver sección d).
 
-Los resultados obtenidos ordenados de mayor a menor fueron:
+### Correlación de Pearson
 
-| Variable | Correlación con `Potability` | Interpretación |
-|---|---:|---|
-| `Solids` | 0.034 | Correlación positiva muy baja. |
-| `Chloramines` | 0.024 | Correlación positiva muy baja. |
-| `Trihalomethanes` | 0.007 | Correlación prácticamente nula. |
-| `Turbidity` | 0.002 | Correlación prácticamente nula. |
-| `ph` | -0.004 | Correlación negativa prácticamente nula. |
-| `Conductivity` | -0.008 | Correlación negativa prácticamente nula. |
-| `Hardness` | -0.014 | Correlación negativa muy baja. |
-| `Sulfate` | -0.024 | Correlación negativa muy baja. |
-| `Organic_carbon` | -0.030 | Correlación negativa muy baja. |
+El coeficiente de Pearson mide la relación **lineal** entre dos variables. Toma valores entre -1 y 1, donde valores cercanos a 0 indican ausencia de relación lineal.
 
-Ninguna variable presenta una correlación lineal significativa con la variable objetivo. Todos los valores se encuentran entre -0.03 y 0.03, lo que indica que la relación entre las propiedades físico-químicas del agua y su potabilidad no es de naturaleza lineal.
+| Variable | Correlación con `Potability` |
+|---|---:|
+| `Solids` | 0.034 |
+| `Chloramines` | 0.024 |
+| `Trihalomethanes` | 0.007 |
+| `Turbidity` | 0.002 |
+| `ph` | -0.004 |
+| `Conductivity` | -0.008 |
+| `Hardness` | -0.014 |
+| `Sulfate` | -0.024 |
+| `Organic_carbon` | -0.030 |
 
-Esto no implica que las variables sean irrelevantes. Significa que su relación con la potabilidad es compleja y no puede ser capturada por una simple correlación lineal. Esto justifica el uso de una red neuronal, que es capaz de aprender relaciones no lineales que métodos más simples no pueden detectar.
+Ninguna variable presenta una correlación lineal significativa con la variable objetivo. Todos los valores se encuentran entre -0.03 y 0.03.
 
-El mapa de calor también confirma que las variables de entrada son prácticamente independientes entre sí, sin correlaciones fuertes entre ningún par de variables. Esto indica que no hay redundancia en el dataset y que todas las columnas aportan información distinta al modelo.
+### Información mutua
 
-Dado que ninguna variable individual se destaca como claramente más influyente que las demás, se decidió conservar las 9 variables de entrada para el entrenamiento de la red neuronal.
+Dado que las correlaciones lineales son todas prácticamente nulas, se complementó el análisis con la **información mutua**, que detecta relaciones no lineales entre variables. Un valor de 0 indica independencia estadística; valores mayores indican mayor dependencia.
 
-![Gráfico de correlaciones](figures/correlaciones.png)
+| Variable | Información mutua |
+|---|---:|
+| `Hardness` | 0.0266 |
+| `Conductivity` | 0.0071 |
+| `Organic_carbon` | 0.0040 |
+| `Turbidity` | 0.0031 |
+| `Sulfate` | 0.0024 |
+| `Solids` | 0.0011 |
+| `ph` | 0.0002 |
+| `Chloramines` | 0.0000 |
+| `Trihalomethanes` | 0.0000 |
+
+Los valores de información mutua también son muy bajos en todas las variables. `Hardness` es la que presenta la mayor dependencia con `Potability`, aunque sigue siendo un valor muy pequeño.
+
+### Interpretación
+
+Ninguna variable individual se destaca como claramente influyente sobre la potabilidad, ni de forma lineal ni no lineal. Esto no significa que las variables sean irrelevantes: lo que indica es que la relación entre las propiedades físico-químicas y la potabilidad es **compleja y multivariada**, es decir, depende de la combinación de varias variables simultáneamente y no de ninguna en particular. Esta característica es precisamente la que justifica el uso de una red neuronal, que es capaz de capturar ese tipo de interacciones no lineales entre variables.
+
+También se verificó que las variables de entrada son prácticamente independientes entre sí: el único par con correlación superior a 0.10 es `Solids` y `Sulfate` (r = -0.15), lo que confirma que no hay redundancia significativa en el dataset y que todas las columnas aportan información distinta.
 
 ---
 
-## (c) Adecuación de la base para una red neuronal de clasificación binaria
+## (c) Factibilidad para una red neuronal de clasificación binaria
 
-**¿Es esta base de datos adecuada para una red neuronal de clasificación binaria?**
+**¿Es esta base de datos adecuada?**
 
-Sí, el dataset es adecuado por varias razones.
+Sí, el dataset es adecuado por varias razones:
 
-En primer lugar, la variable objetivo `Potability` es estrictamente binaria, tomando únicamente los valores 0 (agua no potable) y 1 (agua potable), lo cual se alinea perfectamente con la arquitectura de una red neuronal de clasificación binaria que produce una única salida entre 0 y 1.
-
-En segundo lugar, el dataset está compuesto por datos reales de mediciones físico-químicas de muestras de agua, lo que garantiza que los patrones que aprenda la red correspondan a relaciones reales y no a datos artificiales.
-
-En tercer lugar, aunque las correlaciones lineales con la variable objetivo son bajas, esto no implica que las variables sean irrelevantes. Una red neuronal es capaz de capturar relaciones no lineales y combinaciones entre variables que no son detectables mediante correlación de Pearson.
+- La variable objetivo `Potability` es estrictamente binaria (valores 0 y 1), lo que se alinea directamente con la arquitectura de una red neuronal de clasificación binaria con una sola neurona de salida y función de activación sigmoide.
+- Todas las variables de entrada son numéricas continuas, lo que facilita el preprocesamiento (no requiere codificación) y es compatible con cualquier arquitectura de red neuronal.
+- El dataset contiene datos reales de mediciones físico-químicas, lo que garantiza que los patrones aprendidos correspondan a relaciones reales del mundo.
+- Aunque las correlaciones individuales con la variable objetivo son bajas, esto no invalida el dataset: una red neuronal puede capturar relaciones no lineales y combinaciones entre variables que métodos lineales no detectan.
 
 **¿Qué intentará predecir el modelo?**
 
-El modelo intentará predecir si una muestra de agua es potable o no a partir de sus mediciones físico-químicas. Dado un conjunto de características de entrada como el pH, la dureza, los sólidos disueltos y otros indicadores, la red neuronal producirá un valor entre 0 y 1 que representa la probabilidad de que esa muestra sea potable. Si ese valor supera 0.5 se clasifica como potable (1) y si es menor se clasifica como no potable (0).
+El modelo recibirá como entrada las 9 mediciones físico-químicas de una muestra de agua y producirá como salida un valor entre 0 y 1 que representa la probabilidad de que esa muestra sea potable. Si el valor supera 0.5 se clasifica como potable (1); de lo contrario, como no potable (0).
 
-**¿Cuál es el objetivo del modelo?**
+**¿Cuál es el objetivo?**
 
-El objetivo principal es construir un clasificador automatizado que, al recibir las mediciones físico-químicas de una muestra de agua, sea capaz de determinar si es apta para el consumo humano. Este tipo de herramienta tiene aplicación real en el monitoreo y control de calidad del agua en plantas de tratamiento o sistemas de distribución.
-
-La distribución de clases es aceptable para el entrenamiento: 61% no potable y 39% potable. Este desbalance moderado no genera sesgos significativos en el aprendizaje del modelo, ya que ambas clases tienen representación suficiente.
+Construir un clasificador que, a partir de mediciones físico-químicas, determine si una muestra de agua es apta para el consumo humano. Este tipo de modelo tiene aplicación real en sistemas de monitoreo de calidad del agua en plantas de tratamiento o redes de distribución.
 
 ---
 
 ## (d) Identificación de datos atípicos y limpieza
 
-**Valores faltantes**
+### Valores faltantes
 
-Durante el análisis exploratorio se detectaron valores faltantes en tres columnas:
+Se detectaron valores faltantes en tres columnas:
 
 | Variable | Valores faltantes | Porcentaje |
 |---|---:|---:|
@@ -129,82 +126,77 @@ Durante el análisis exploratorio se detectaron valores faltantes en tres column
 | `Sulfate` | 781 | 23.84% |
 | `Trihalomethanes` | 162 | 4.95% |
 
-Se decidió imputar estos valores con la **mediana de cada columna** en lugar de eliminar las filas correspondientes. Eliminar las filas implicaría perder hasta un 24% del dataset, lo cual reduciría significativamente la cantidad de datos disponibles para el entrenamiento. Se eligió la mediana en lugar del promedio porque es más robusta ante la presencia de outliers, es decir, no se ve afectada por valores extremos como sí lo hace el promedio.
+Se decidió **imputar estos valores con la mediana de cada columna** en lugar de eliminar las filas correspondientes. Eliminar las filas implicaría perder hasta un 24% del dataset, lo que reduciría significativamente la cantidad de datos disponibles para el entrenamiento. Se eligió la **mediana** en lugar del promedio porque es más robusta ante la presencia de outliers: no se ve afectada por valores extremos como sí lo hace la media.
 
-**Detección de datos atípicos**
+Luego de la imputación, el dataset quedó sin valores faltantes en ninguna columna.
 
-Se aplicó el método del rango intercuartílico (IQR) para detectar outliers en cada columna. Este método define los límites fuera de los cuales un valor se considera atípico mediante las siguientes fórmulas:
+### Detección de outliers
 
-límite inferior = Q1 - 1.5 × IQR
-límite superior = Q3 + 1.5 × IQR
+Se aplicó el método del **rango intercuartílico (IQR)** para detectar outliers. Este método define los límites fuera de los cuales un valor se considera atípico:
 
-donde Q1 es el percentil 25, Q3 es el percentil 75 e IQR = Q3 - Q1.
+- Límite inferior = Q1 − 1.5 × IQR  
+- Límite superior = Q3 + 1.5 × IQR
 
-Los resultados obtenidos fueron:
+donde Q1 es el percentil 25, Q3 el percentil 75 e IQR = Q3 − Q1.
 
-| Variable | Límite inferior | Límite superior | Cantidad de atípicos |
-|---|---:|---:|---:|
-| `ph` | 3.14 | 11.02 | 46 |
-| `Hardness` | 117.13 | 276.39 | 83 |
-| `Solids` | -1832.42 | 44831.87 | 47 |
-| `Chloramines` | 3.15 | 11.10 | 61 |
-| `Sulfate` | 229.32 | 438.33 | 41 |
-| `Conductivity` | 191.65 | 655.88 | 11 |
-| `Organic_carbon` | 5.33 | 23.30 | 25 |
-| `Trihalomethanes` | 23.61 | 109.58 | 33 |
-| `Turbidity` | 1.85 | 6.09 | 19 |
+Los resultados fueron:
+
+| Variable | Límite inferior | Límite superior | Outliers detectados | % del total |
+|---|---:|---:|---:|---:|
+| `ph` | 3.89 | 10.26 | 142 | 4.3% |
+| `Hardness` | 117.13 | 276.39 | 83 | 2.5% |
+| `Solids` | −1832.42 | 44831.87 | 47 | 1.4% |
+| `Chloramines` | 3.15 | 11.10 | 61 | 1.9% |
+| `Sulfate` | 267.16 | 400.32 | 264 | 8.1% |
+| `Conductivity` | 191.65 | 655.88 | 11 | 0.3% |
+| `Organic_carbon` | 5.33 | 23.30 | 25 | 0.8% |
+| `Trihalomethanes` | 26.62 | 106.70 | 54 | 1.6% |
+| `Turbidity` | 1.85 | 6.09 | 19 | 0.6% |
 
 **¿Es necesario limpiarlos?**
 
-Se decidió **no eliminar** los outliers detectados por las siguientes razones:
+Se decidió **no eliminar** los outliers por las siguientes razones:
 
-Primero, representan mediciones físico-químicas reales que pueden ocurrir naturalmente en distintas fuentes de agua. Un agua con muchos sólidos disueltos, pH extremo o alta conductividad es perfectamente posible en la naturaleza y no necesariamente indica un error de medición.
-
-Segundo, eliminar todos los outliers implicaría descartar entre 300 y 400 filas del dataset, lo que representa hasta un 12% de los datos disponibles, reduciendo innecesariamente el conjunto de entrenamiento.
-
-Tercero, la normalización Z-score aplicada en la siguiente sección reduce el impacto de estos valores extremos sobre el entrenamiento de la red neuronal al llevar todas las variables a una escala comparable.
-
-Los boxplots confirman visualmente la presencia de outliers en todas las variables. `Solids` es la más destacada con valores que superan 60.000 mientras la mayoría se concentra entre 15.000 y 27.000. `Conductivity` presenta outliers que llegan hasta 750. El resto de las variables muestran outliers moderados distribuidos principalmente hacia los extremos superiores.
+1. Representan mediciones físico-químicas reales que pueden ocurrir naturalmente en distintas fuentes de agua. Un agua con pH extremo, alta concentración de sulfatos o muchos sólidos disueltos es perfectamente posible en la naturaleza y no indica un error de medición.
+2. La variable más afectada es `Sulfate` con un 8.1% de outliers, y el resto no supera el 5%. Eliminar todas las filas con outliers implicaría descartar una proporción significativa del dataset.
+3. La normalización Z-score aplicada en la sección siguiente reduce el impacto de estos valores extremos, llevando todas las variables a una escala comparable sin eliminar información real.
 
 ---
 
 ## (e) Normalización de los datos
 
-Dado que todas las variables de entrada son numéricas continuas con escalas muy distintas entre sí, es necesario normalizarlas antes de entrenar la red neuronal.
+Dado que todas las variables de entrada son numéricas con escalas muy distintas entre sí, es necesario normalizarlas antes del entrenamiento. Por ejemplo, `Solids` toma valores en el orden de los miles mientras que `Turbidity` toma valores menores a 7. Sin normalización, la red neuronal podría asignarle mayor importancia a variables con mayor magnitud numérica aunque no sean más relevantes para la predicción. Además, la normalización facilita la convergencia del algoritmo de descenso por gradiente.
 
-Por ejemplo, `Solids` toma valores en el orden de los miles mientras que `Turbidity` toma valores menores a 7. Sin normalización, la red neuronal podría asignarle más importancia a variables con mayor magnitud numérica aunque no sean más relevantes para la predicción. Además, la normalización facilita y acelera la convergencia del algoritmo de descenso por gradiente.
+**La variable objetivo `Potability` no se normaliza**, ya que es binaria (0 o 1) y cumple su función directamente como etiqueta de clase.
 
-**Imputación previa a la normalización**
+### Método elegido: estandarización Z-score
 
-Antes de normalizar se reemplazaron los valores faltantes de `ph`, `Sulfate` y `Trihalomethanes` con la mediana de cada columna. Luego de esta operación el dataset quedó sin valores faltantes en ninguna columna.
+Se aplicó la estandarización Z-score a las 9 variables de entrada mediante la fórmula:
 
-**Método elegido: estandarización Z-score**
+z = (x − μ) / σ
 
-Se aplicó la estandarización Z-score a todas las variables de entrada mediante la fórmula:
+donde μ es la media y σ el desvío estándar de cada columna. Este método transforma cada variable para que quede con **media 0 y desvío estándar 1**.
 
-z = (x - media) / desvío estándar
+Se eligió Z-score en lugar de Min-Max por dos razones:
 
-Este método transforma cada variable para que quede con media igual a 0 y desvío estándar igual a 1, llevando todas las columnas a una escala comparable.
+1. El dataset presenta outliers en todas las columnas. El método Min-Max es muy sensible a valores extremos: al comprimir todos los valores al rango [0, 1], los outliers distorsionan la escala de toda la columna. El Z-score en cambio reescala los valores manteniendo la distribución original.
+2. El Z-score es el método recomendado para redes neuronales entrenadas con descenso por gradiente, porque produce entradas centradas en cero, lo que favorece la estabilidad numérica del entrenamiento.
 
-Se eligió Z-score en lugar de Min-Max por dos razones. Primero, el dataset presenta outliers en todas las columnas y el método Min-Max es muy sensible a valores extremos ya que comprime todos los valores en un rango fijo de 0 a 1, lo que hace que los outliers distorsionen la escala de toda la columna. El Z-score en cambio reescala los valores manteniendo su distribución original. Segundo, el Z-score es el método recomendado para redes neuronales con descenso por gradiente porque produce entradas centradas en cero, lo que favorece la estabilidad del entrenamiento.
+La normalización se implementa sobre el conjunto de entrenamiento y los parámetros (media y desvío) obtenidos se aplican también al conjunto de validación y prueba, para evitar data leakage.
 
-La normalización se implementó manualmente usando NumPy, sin recurrir a librerías de machine learning, aplicándose sobre las 9 columnas de entrada.
+### División del dataset
 
-**Resultado final**
+Antes del entrenamiento, el dataset se dividirá en conjunto de entrenamiento (80%) y conjunto de prueba (20%), de forma **estratificada** para preservar la proporción de clases en ambos subconjuntos. Esta división se realizará en la Parte 2.
 
-Luego del procesamiento, las variables quedaron con los siguientes resultados:
+### Resultado final
 
-| Variable | Media luego de normalizar | Desvío estándar luego de normalizar |
-|---|---:|---:|
-| `ph` | ~0 | 1.00 |
-| `Hardness` | ~0 | 1.00 |
-| `Solids` | ~0 | 1.00 |
-| `Chloramines` | ~0 | 1.00 |
-| `Sulfate` | ~0 | 1.00 |
-| `Conductivity` | ~0 | 1.00 |
-| `Organic_carbon` | ~0 | 1.00 |
-| `Trihalomethanes` | ~0 | 1.00 |
-| `Turbidity` | ~0 | 1.00 |
+Luego del preprocesamiento, las 9 variables de entrada quedan con media ≈ 0 y desvío estándar = 1. La matriz de entrada X tiene shape **(3276, 9)** y la variable objetivo y tiene shape **(3276, 1)**. El dataset queda listo para el entrenamiento de la red neuronal.
 
-La matriz final de entrada X tiene shape **(3276, 9)** y la variable objetivo y tiene shape **(3276, 1)**. El dataset queda listo para ser utilizado en el entrenamiento de la red neuronal.
 
+# Parte 2: Red Neuronal con Numpy
+
+Falta agregar esto :C
+
+# Parte 3: Comparación con scikit-learn
+
+# Parte 4: Conclusión
