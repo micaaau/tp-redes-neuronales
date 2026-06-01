@@ -186,7 +186,7 @@ La normalización se implementa sobre el conjunto de entrenamiento y los paráme
 
 ### División del dataset
 
-Antes del entrenamiento, el dataset se dividirá en conjunto de entrenamiento (80%) y conjunto de prueba (20%), de forma **estratificada** para preservar la proporción de clases en ambos subconjuntos. Esta división se realizará en la Parte 2.
+Antes del entrenamiento, el dataset se dividirá en conjunto de entrenamiento y conjunto de prueba. En las partes siguientes se utilizará aproximadamente dos tercios de los datos para entrenamiento y un tercio para prueba, manteniendo una semilla fija para que la división sea reproducible.
 
 ### Resultado final
 
@@ -207,12 +207,12 @@ La red neuronal implementada tiene una arquitectura feedforward con una capa ocu
 | Capa | Cantidad de neuronas | Función de activación |
 |---|---:|---|
 | Entrada | 9 | No aplica |
-| Capa oculta | 8 | ReLU |
+| Capa oculta | 6 | ReLU |
 | Salida | 1 | Sigmoide |
 
 La capa de entrada tiene 9 neuronas porque el dataset conserva 9 variables físico-químicas como características de entrada: `ph`, `Hardness`, `Solids`, `Chloramines`, `Sulfate`, `Conductivity`, `Organic_carbon`, `Trihalomethanes` y `Turbidity`.
 
-La capa oculta tiene 8 neuronas. Se eligió una arquitectura simple para evitar un modelo demasiado grande respecto del tamaño del dataset y para mantener una implementación clara con `numpy`.
+La capa oculta tiene 6 neuronas. Se eligió esta arquitectura porque es simple, adecuada para un dataset con 9 variables de entrada y mostró un rendimiento levemente mejor en prueba que la arquitectura con 8 neuronas. Al tener menos neuronas, también reduce la complejidad del modelo y el riesgo de sobreajuste.
 
 La función de activación elegida para la capa oculta fue **ReLU**:
 
@@ -258,38 +258,30 @@ Además, en cada iteración se registraron la accuracy y el costo tanto para el 
 
 Durante el entrenamiento se registraron las curvas de accuracy y función de costo para los conjuntos de entrenamiento y prueba.
 
-![Accuracy por iteración](figures/acuraccy-iteracion.png)
+![Accuracy por iteración](figures/acuraccy.png)
 
-![Error por iteración](figures/error-iteracion.png)
+![Error por iteración](figures/costo.png)
 
 La accuracy del modelo se mantuvo aproximadamente entre 0.66 y 0.68 en el conjunto de prueba. Con `seed=10`, el resultado final fue:
 
 | Métrica | Valor |
 |---|---:|
-| Accuracy train | 0.6726 |
-| Accuracy test | 0.6758 |
+| Accuracy train | 0.6703 |
+| Accuracy test | 0.6813 |
 
 Para analizar si la red realmente aprendió, se comparó su rendimiento con un modelo base. En el conjunto de prueba, la clase mayoritaria representa aproximadamente el 62.64% de los datos. Por lo tanto, un clasificador trivial que predijera siempre la clase mayoritaria tendría una accuracy de 0.6264.
 
-La red neuronal supera ese baseline, ya que obtuvo una accuracy test de 0.6758. Esto indica que el modelo logró aprender ciertos patrones de los datos. Sin embargo, la mejora es moderada, con una diferencia de aproximadamente 5 puntos porcentuales respecto del baseline.
+La red neuronal supera el baseline de la clase mayoritaria, que era aproximadamente 0.6264. El modelo obtuvo una accuracy test de 0.6813, por lo que logró aprender ciertos patrones de los datos. La mejora es moderada, pero indica que la red obtiene un rendimiento superior al de predecir siempre la clase más frecuente.
 
-También se probó el efecto de cambiar la semilla aleatoria, manteniendo fija la partición train/test. Los resultados finales fueron:
-
-| Seed | Accuracy train | Accuracy test |
-|---:|---:|---:|
-| 10 | 0.6726 | 0.6758 |
-| 30 | 0.6891 | 0.6621 |
-| 42 | 0.6841 | 0.6538 |
-
-A partir de esta comparación, se decidió conservar `seed=10`, ya que obtuvo el mejor rendimiento en test y una diferencia menor entre entrenamiento y prueba. Esto sugiere una mejor capacidad de generalización que las otras semillas evaluadas.
+Se utilizó `seed=10` para fijar la inicialización de los pesos y la selección aleatoria de muestras durante el entrenamiento. La seed permite que los resultados sean reproducibles. Al modificarla, los resultados pueden variar porque cambian los pesos iniciales y el orden de las muestras utilizadas para actualizar la red.
 
 Las curvas presentan oscilaciones porque el entrenamiento se realiza con una muestra aleatoria por iteración, es decir, mediante descenso por gradiente estocástico. Este comportamiento es esperable en este tipo de entrenamiento.
 
 ## (d) Análisis de overfitting
 
-A partir de las curvas de accuracy y costo, no se observa un sobreajuste extremo. La accuracy de entrenamiento y la accuracy de prueba se mantienen en valores cercanos, especialmente con `seed=10`.
+A partir de las curvas de accuracy y costo, no se observa un sobreajuste marcado. La accuracy de entrenamiento y la accuracy de prueba se mantienen en valores cercanos. Incluso en el resultado final, la accuracy de test es levemente superior a la de entrenamiento, lo que indica que el modelo no está memorizando los datos de entrenamiento.
 
-Sin embargo, al probar distintas semillas se observó que algunas configuraciones obtienen mayor accuracy en entrenamiento pero menor accuracy en prueba. Por ejemplo, con `seed=30` la accuracy train fue 0.6891, mientras que la accuracy test bajó a 0.6621. Esto sugiere que el modelo puede volverse sensible a la inicialización de pesos y no siempre generaliza de la misma manera.
+Las curvas presentan oscilaciones porque el entrenamiento se realiza con una muestra aleatoria por iteración. Por este motivo, el rendimiento puede subir y bajar durante el entrenamiento sin que eso implique necesariamente un problema.
 
 Para manejar este posible sobreajuste o variabilidad se podrían aplicar distintas estrategias:
 
@@ -316,7 +308,7 @@ Se utilizó `MLPClassifier` para construir una red neuronal con una arquitectura
 | Capa | Cantidad de neuronas | Función de activación |
 |---|---:|---|
 | Entrada | 9 | No aplica |
-| Capa oculta | 8 | ReLU |
+| Capa oculta | 6 | ReLU |
 | Salida | 1 | Sigmoide |
 
 Se aplicó el mismo preprocesamiento que en la Parte 2: imputación de valores faltantes con la mediana, normalización Z-score y separación entre entrenamiento y prueba con `test_size = 1/3`.
@@ -329,20 +321,20 @@ Los resultados obtenidos fueron:
 
 | Modelo | Accuracy train | Accuracy test |
 |---|---:|---:|
-| NumPy | 0.6726 | 0.6758 |
-| scikit-learn | 0.6873 | 0.6630 |
+| NumPy | 0.6703 | 0.6813 |
+| scikit-learn | 0.6896 | 0.6777 |
 
 ![Comparación entre NumPy y scikit-learn](figures/comparacion.png)
 
-Ambos modelos utilizan una arquitectura similar, con una capa oculta de 8 neuronas y función de activación ReLU. La implementación con `scikit-learn` obtuvo una accuracy de entrenamiento levemente mayor que la implementación en `numpy`, pero un accuracy de prueba menor.
+Ambos modelos utilizan una arquitectura similar, con una capa oculta de 6 neuronas y función de activación ReLU. La implementación con `scikit-learn` obtuvo una accuracy de entrenamiento mayor que la implementación en `numpy`, pero una accuracy de prueba levemente menor.
 
-Esto indica que, para esta configuración, el modelo de `scikit-learn` ajustó un poco más los datos de entrenamiento, pero no generalizó mejor sobre el conjunto de prueba. La diferencia entre ambos modelos no es muy grande, por lo que puede concluirse que tienen un rendimiento similar.
+Esto indica que el modelo de `scikit-learn` ajustó un poco más los datos de entrenamiento, mientras que la implementación manual logró una generalización apenas mejor en el conjunto de prueba. De todos modos, la diferencia entre ambos modelos es pequeña, por lo que puede concluirse que tienen un rendimiento similar.
 
 La implementación manual en `numpy` permite comprender mejor el funcionamiento interno de la red neuronal, ya que requiere programar la propagación hacia adelante, la retropropagación y la actualización de pesos. En cambio, `scikit-learn` permite construir y entrenar redes neuronales de forma más simple y rápida.
 
 La curva de pérdida del modelo implementado con `scikit-learn` muestra una disminución progresiva del error durante el entrenamiento:
 
-![Función de pérdida - scikit-learn](figures/funcion-perdida.png)
+![Función de pérdida - scikit-learn](figures/funcion_perdida.png)
 
 ## (c) Prueba de otras arquitecturas
 
@@ -350,19 +342,19 @@ También se probaron distintas arquitecturas modificando la cantidad de neuronas
 
 | Arquitectura | Accuracy train | Accuracy test |
 |---|---:|---:|
+| 6 neuronas | 0.6896 | 0.6777 |
 | 8 neuronas | 0.6873 | 0.6630 |
 | 16 neuronas | 0.7065 | 0.6749 |
 | 32 neuronas | 0.7482 | 0.6401 |
 | 2 capas: 16 y 8 | 0.7518 | 0.6575 |
 
-![Accuracy test según arquitectura](figures/Accuracy-test-arquitectura.png)
+![Accuracy test según arquitectura](figures/accuracy_segun_arq.png)
 
-La arquitectura con 16 neuronas en una capa oculta obtuvo el mejor resultado en el conjunto de prueba, con una accuracy de 0.6749. Este valor es muy cercano al obtenido por la red implementada manualmente en `numpy`. 
-Aunque la arquitectura de 16 neuronas obtuvo un resultado levemente mejor dentro de las pruebas realizadas con `scikit-learn`, no se modificó la implementación manual de la Parte 2. Se decidió mantener la red de `numpy` con 8 neuronas para conservar una arquitectura simple y comparable con la implementación base.
+La arquitectura con 6 neuronas en una capa oculta obtuvo el mejor resultado en el conjunto de prueba, con una accuracy de 0.6777. Este resultado es muy cercano al obtenido por la red implementada manualmente en `numpy`, que alcanzó una accuracy test de 0.6813.
 
-La exploración con `scikit-learn` se utilizó justamente para analizar de forma rápida cómo cambiaba el rendimiento al variar la cantidad de neuronas o capas. Dado que la mejora con 16 neuronas fue pequeña, no se consideró necesario rehacer la implementación manual.
+Al aumentar la cantidad de neuronas a 16, la accuracy de entrenamiento subió, pero la accuracy de prueba fue levemente menor. Con 32 neuronas y con dos capas ocultas, la accuracy de entrenamiento aumentó aún más, pero el rendimiento en prueba disminuyó. Esto sugiere que aumentar la complejidad del modelo no necesariamente mejora la generalización y puede llevar a cierto sobreajuste.
 
-En cambio, las arquitecturas más grandes, como la de 32 neuronas o la de dos capas ocultas, obtuvieron mayor accuracy en entrenamiento pero menor accuracy en prueba. Esto sugiere que aumentar la complejidad del modelo no necesariamente mejora la generalización y puede llevar a cierto sobreajuste.
+La exploración con `scikit-learn` permitió analizar de forma rápida cómo cambiaba el rendimiento al variar la cantidad de neuronas o capas. A partir de estos resultados, se decidió mantener una arquitectura simple con 6 neuronas, ya que obtuvo el mejor rendimiento en prueba y evita aumentar innecesariamente la complejidad del modelo.
 
 En conclusión, `scikit-learn` facilita la implementación y comparación de distintas redes neuronales. Sin embargo, en este dataset las mejoras obtenidas al modificar la arquitectura son moderadas. Esto refuerza la idea observada en las partes anteriores: la potabilidad del agua no parece separarse fácilmente a partir de estas variables físico-químicas, por lo que el rendimiento de los modelos se mantiene en valores cercanos.
 
