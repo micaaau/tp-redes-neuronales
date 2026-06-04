@@ -202,6 +202,8 @@ En esta parte se implementó una red neuronal de clasificación binaria utilizan
 
 La red neuronal implementada tiene una arquitectura feedforward con una capa oculta y una capa de salida.
 
+![red](figures/RED_NEURONAL.png)
+
 | Capa | Cantidad de neuronas | Función de activación |
 |---|---:|---|
 | Entrada | 9 | No aplica |
