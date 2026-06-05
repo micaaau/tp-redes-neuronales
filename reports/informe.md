@@ -39,7 +39,7 @@ La distribución de la variable objetivo es la siguiente:
 | 0 | No potable | 1998 | 60.99% |
 | 1 | Potable | 1278 | 39.01% |
 
-Existe un leve desbalance de clases (61% / 39%). Este desbalance es moderado y no representa un problema crítico para el entrenamiento, ya que ambas clases tienen representación suficiente. Aun así, conviene tener en cuenta este desbalance al interpretar la accuracy del modelo: un clasificador trivial que prediga siempre "no potable" obtendría un 61% de accuracy sin haber aprendido nada, por lo que se espera que el modelo supere ese valor.
+Existe un leve desbalance de clases (61% / 39%). Este desbalance es moderado y no representa un problema crítico para el entrenamiento, ya que ambas clases tienen representación suficiente. Aun así, conviene tener en cuenta este desbalance al interpretar la accuracy del modelo: un clasificador trivial que prediga siempre "no potable" obtendría un 59% de accuracy sin haber aprendido nada, por lo que se espera que el modelo supere ese valor.
 
 ---
 
@@ -190,8 +190,6 @@ Antes del entrenamiento, el dataset se dividirá en conjunto de entrenamiento (7
 
 Luego del preprocesamiento, las 9 variables de entrada quedan con media ≈ 0 y desvío estándar = 1. La matriz de entrada X tiene shape **(3276, 9)** y la variable objetivo y tiene shape **(3276, 1)**. El dataset queda listo para el entrenamiento de la red neuronal.
 
-## -------------------------------------------
-
 # Parte 2: Red neuronal con NumPy
 
 ## Objetivo
@@ -274,7 +272,7 @@ Los resultados finales obtenidos fueron:
 
 La accuracy de entrenamiento es levemente mayor que la de prueba, lo que es coherente con un modelo que aprende sin sobreajustarse de forma marcada. La diferencia entre ambas es de apenas 1.5 puntos, lo que indica que el modelo generaliza correctamente a datos que no vio durante el entrenamiento.
 
-Además, la red superó al modelo base que predice siempre la clase mayoritaria (60.99% de accuracy si predice "no potable" para todos los casos). Esto indica que el modelo logró aprender ciertos patrones de los datos, aunque la mejora fue moderada.
+Además, la red superó al modelo base que predice siempre la clase mayoritaria. Esto indica que el modelo logró aprender ciertos patrones de los datos, aunque la mejora fue moderada.
 
 El rendimiento no alcanzó valores muy altos, lo cual es coherente con el análisis exploratorio realizado en la Parte 1. Las variables físico-químicas presentan correlaciones bajas con `Potability`, por lo que no existe una separación clara entre las clases.
 
@@ -291,8 +289,6 @@ Si llegara a aparecer overfitting, se podría manejar de varias formas: utilizan
 También se probaron distintas configuraciones modificando la cantidad de neuronas, la tasa de aprendizaje y la proporción de datos usada para entrenamiento y prueba. Finalmente se mantuvo una arquitectura simple con 6 neuronas ocultas, ya que permitió obtener un rendimiento razonable sin aumentar innecesariamente la complejidad del modelo.
 
 En conclusión, la red neuronal implementada en NumPy logró aprender de manera moderada. El rendimiento obtenido sugiere que el problema de clasificación no es trivial y que las variables disponibles no separan con mucha claridad las muestras potables de las no potables.
-
-## -------------------------------------------
 
 # Parte 3: Comparación con scikit-learn
 
@@ -361,8 +357,6 @@ En cambio, la red de 6 neuronas mantiene una brecha pequeña entre train y test 
 A partir de estos resultados, se decidió mantener la arquitectura simple con 6 neuronas, ya que ofrece el mejor balance entre rendimiento y generalización.
 
 En conclusión, `scikit-learn` facilita la implementación y comparación de distintas redes neuronales. Sin embargo, en este dataset las mejoras obtenidas al modificar la arquitectura son moderadas o incluso contraproducentes. Esto refuerza la idea observada en las partes anteriores: la potabilidad del agua no parece separarse fácilmente a partir de estas variables físico-químicas, por lo que aumentar la complejidad del modelo no se traduce en mejor rendimiento.
-
-## -------------------------------------------
 
 # Parte 4: Conclusión
 
